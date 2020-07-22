@@ -64,23 +64,41 @@ def getClickedPosistion(pos, rows, width):
     return row, col
 
 
-def bubbleSort(win, count, grid, rows, width):
-    win.fill((255, 255, 255))
-
-    n = len(count)
+def bubbleSort(listForSorting, win, grid, rows, width):
+    n = len(listForSorting)
     for i in range(n - 1):
         for j in range(0, n - i - 1):
-            if count[j] > count[j + 1]:
-                count[j], count[j + 1] = count[j + 1], count[j]
+            if listForSorting[j] > listForSorting[j + 1]:
+                listForSorting[j], listForSorting[j + 1] = listForSorting[j + 1], listForSorting[j]
 
         for a in range(rows):
             for b in range(rows):
                 grid[a][b].colour = (128, 128, 128)
 
         for row in range(rows):
-            for col in range(count[row]):
+            for col in range(listForSorting[row]):
                 grid[row][rows - col - 1].colour = (0, 0, 128)
 
+        draw(win, grid, rows, width)
+    return True
+
+
+def insertionSort(listForSorting, win, grid, rows, width):
+    for i in range(1, len(listForSorting)):
+        j = i - 1
+        nxt_element = listForSorting[i]
+        while (listForSorting[j] > nxt_element) and (j >= 0):
+            listForSorting[j + 1] = listForSorting[j]
+            j = j - 1
+        listForSorting[j + 1] = nxt_element
+
+        for a in range(rows):
+            for b in range(rows):
+                grid[a][b].colour = (128, 128, 128)
+
+        for row in range(rows):
+            for col in range(listForSorting[row]):
+                grid[row][rows - col - 1].colour = (0, 0, 128)
         draw(win, grid, rows, width)
     return True
 
@@ -99,15 +117,13 @@ def main(win, width):
     running = True
     started = False
     ended = False
-
+    draw(win, grid, ROWS, width)
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
                 pygame.quit()
                 quit()
-            if not started and not ended:
-                draw(win, grid, ROWS, width)
 
             if pygame.mouse.get_pressed()[0] and not started:  # LEFT
                 pos = pygame.mouse.get_pos()
@@ -122,6 +138,7 @@ def main(win, width):
                         if grid[j][i].colour == (0, 0, 0) and grid[i][j].calculated is False:
                             grid[i][j].calculated = True
                             count[j] += 1
+                draw(win, grid, ROWS, width)
 
             elif pygame.mouse.get_pressed()[2] and not started:  # RIGHT
                 pos = pygame.mouse.get_pos()
@@ -136,18 +153,24 @@ def main(win, width):
                         if grid[j][i].colour == (128, 128, 128) and grid[i][j].calculated is True:
                             grid[i][j].calculated = False
                             count[j] -= 1
+                draw(win, grid, ROWS, width)
 
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE and not started and not ended:
+                if event.key == pygame.K_1 and not started and not ended:
                     started = True
-                    ended = bubbleSort(win, count, grid, ROWS, width)
+                    ended = bubbleSort(count, win, grid, ROWS, width)
 
-                if event.key == pygame.K_r and started and ended:
+                if event.key == pygame.K_2 and not started and not ended:
+                    started = True
+                    ended = insertionSort(count, win, grid, ROWS, width)
+
+                if event.key == pygame.K_r:
                     resetGame(grid, ROWS)
                     started = False
                     ended = False
                     for i in range(ROWS):
                         count[i] = 0
+                    draw(win, grid, ROWS, width)
 
                 if event.key == pygame.K_ESCAPE:
                     running = False
