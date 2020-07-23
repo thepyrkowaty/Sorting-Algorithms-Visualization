@@ -1,1 +1,2 @@
-The Visualization of sorting algorithms made in python using pygame
+##The Visualization of sorting algorithms made in python using pygame
+

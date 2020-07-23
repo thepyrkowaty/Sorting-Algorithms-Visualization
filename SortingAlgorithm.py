@@ -64,42 +64,74 @@ def getClickedPosistion(pos, rows, width):
     return row, col
 
 
-def bubbleSort(listForSorting, win, grid, rows, width):
-    n = len(listForSorting)
+def bubbleSort(listToSort, win, grid, rows, width):
+    n = len(listToSort)
     for i in range(n - 1):
         for j in range(0, n - i - 1):
-            if listForSorting[j] > listForSorting[j + 1]:
-                listForSorting[j], listForSorting[j + 1] = listForSorting[j + 1], listForSorting[j]
+            if listToSort[j] > listToSort[j + 1]:
+                listToSort[j], listToSort[j + 1] = listToSort[j + 1], listToSort[j]
 
         for a in range(rows):
             for b in range(rows):
                 grid[a][b].colour = (128, 128, 128)
 
         for row in range(rows):
-            for col in range(listForSorting[row]):
+            for col in range(listToSort[row]):
                 grid[row][rows - col - 1].colour = (0, 0, 128)
 
         draw(win, grid, rows, width)
     return True
 
 
-def insertionSort(listForSorting, win, grid, rows, width):
-    for i in range(1, len(listForSorting)):
+def insertionSort(listToSort, win, grid, rows, width):
+    for i in range(1, len(listToSort)):
         j = i - 1
-        nxt_element = listForSorting[i]
-        while (listForSorting[j] > nxt_element) and (j >= 0):
-            listForSorting[j + 1] = listForSorting[j]
+        nxt_element = listToSort[i]
+        while (listToSort[j] > nxt_element) and (j >= 0):
+            listToSort[j + 1] = listToSort[j]
             j = j - 1
-        listForSorting[j + 1] = nxt_element
+        listToSort[j + 1] = nxt_element
 
         for a in range(rows):
             for b in range(rows):
                 grid[a][b].colour = (128, 128, 128)
 
         for row in range(rows):
-            for col in range(listForSorting[row]):
+            for col in range(listToSort[row]):
                 grid[row][rows - col - 1].colour = (0, 0, 128)
         draw(win, grid, rows, width)
+    return True
+
+
+def partitionForQuickSort(listToSort, first, last, win, grid, rows, width):
+    i = (first - 1)
+    pivot = listToSort[last]
+
+    for j in range(first, last):
+        if listToSort[j] < pivot:
+            i = i + 1
+            listToSort[i], listToSort[j] = listToSort[j], listToSort[i]
+
+    listToSort[i + 1], listToSort[last] = listToSort[last], listToSort[i + 1]
+    for a in range(rows):
+        for b in range(rows):
+            grid[a][b].colour = (128, 128, 128)
+
+    for row in range(rows):
+        for col in range(listToSort[row]):
+            grid[row][rows - col - 1].colour = (0, 0, 128)
+    draw(win, grid, rows, width)
+
+    return i + 1
+
+
+def quickSort(listToSort, first, last, win, grid, rows, width):
+    if first < last:
+
+        pi = partitionForQuickSort(listToSort, first, last, win, grid, rows, width)
+
+        quickSort(listToSort, first, pi - 1, win, grid, rows, width)
+        quickSort(listToSort, pi + 1, last, win, grid, rows, width)
     return True
 
 
@@ -160,9 +192,13 @@ def main(win, width):
                     started = True
                     ended = bubbleSort(count, win, grid, ROWS, width)
 
-                if event.key == pygame.K_2 and not started and not ended:
+                elif event.key == pygame.K_2 and not started and not ended:
                     started = True
                     ended = insertionSort(count, win, grid, ROWS, width)
+
+                elif event.key == pygame.K_3 and not started and not ended:
+                    started = True
+                    ended = quickSort(count, 0, len(count)-1, win, grid, ROWS, width)
 
                 if event.key == pygame.K_r:
                     resetGame(grid, ROWS)
