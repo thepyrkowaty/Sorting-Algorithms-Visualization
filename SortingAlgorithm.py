@@ -6,6 +6,7 @@ GAME_HEIGHT = 800
 os.environ['SDL_VIDEO_CENTERED'] = '1'
 GAME_WINDOW = pygame.display.set_mode((GAME_WIDTH, GAME_HEIGHT))
 pygame.display.set_caption("Sorting Algorithm Visualisation")
+pygame.init()
 
 
 class Tile:
@@ -56,12 +57,29 @@ def draw(win, grid, rows, width):
     pygame.display.update()
 
 
+def prepareToDraw(listToSort, grid, rows):
+    for a in range(rows):
+        for b in range(rows):
+            grid[a][b].colour = (128, 128, 128)
+
+    for row in range(rows):
+        for col in range(listToSort[row]):
+            grid[row][rows - col - 1].colour = (0, 0, 128)
+
+
 def getClickedPosistion(pos, rows, width):
     gap = width // rows
     y, x = pos
     row = y // gap
     col = x // gap
     return row, col
+
+
+def resetGame(grid, rows):
+    for i in range(rows):
+        for j in range(rows):
+            grid[i][j].colour = (128, 128, 128)
+            grid[i][j].calculated = False
 
 
 def bubbleSort(listToSort, win, grid, rows, width):
@@ -71,14 +89,7 @@ def bubbleSort(listToSort, win, grid, rows, width):
             if listToSort[j] > listToSort[j + 1]:
                 listToSort[j], listToSort[j + 1] = listToSort[j + 1], listToSort[j]
 
-        for a in range(rows):
-            for b in range(rows):
-                grid[a][b].colour = (128, 128, 128)
-
-        for row in range(rows):
-            for col in range(listToSort[row]):
-                grid[row][rows - col - 1].colour = (0, 0, 128)
-
+        prepareToDraw(listToSort, grid, rows)
         draw(win, grid, rows, width)
     return True
 
@@ -86,25 +97,19 @@ def bubbleSort(listToSort, win, grid, rows, width):
 def insertionSort(listToSort, win, grid, rows, width):
     for i in range(1, len(listToSort)):
         j = i - 1
-        nxt_element = listToSort[i]
-        while (listToSort[j] > nxt_element) and (j >= 0):
+        nextElement = listToSort[i]
+        while (listToSort[j] > nextElement) and (j >= 0):
             listToSort[j + 1] = listToSort[j]
             j = j - 1
-        listToSort[j + 1] = nxt_element
+        listToSort[j + 1] = nextElement
 
-        for a in range(rows):
-            for b in range(rows):
-                grid[a][b].colour = (128, 128, 128)
-
-        for row in range(rows):
-            for col in range(listToSort[row]):
-                grid[row][rows - col - 1].colour = (0, 0, 128)
+        prepareToDraw(listToSort, grid, rows)
         draw(win, grid, rows, width)
     return True
 
 
 def partitionForQuickSort(listToSort, first, last, win, grid, rows, width):
-    i = (first - 1)
+    i = first - 1
     pivot = listToSort[last]
 
     for j in range(first, last):
@@ -113,13 +118,7 @@ def partitionForQuickSort(listToSort, first, last, win, grid, rows, width):
             listToSort[i], listToSort[j] = listToSort[j], listToSort[i]
 
     listToSort[i + 1], listToSort[last] = listToSort[last], listToSort[i + 1]
-    for a in range(rows):
-        for b in range(rows):
-            grid[a][b].colour = (128, 128, 128)
-
-    for row in range(rows):
-        for col in range(listToSort[row]):
-            grid[row][rows - col - 1].colour = (0, 0, 128)
+    prepareToDraw(listToSort, grid, rows)
     draw(win, grid, rows, width)
 
     return i + 1
@@ -127,19 +126,81 @@ def partitionForQuickSort(listToSort, first, last, win, grid, rows, width):
 
 def quickSort(listToSort, first, last, win, grid, rows, width):
     if first < last:
-
         pi = partitionForQuickSort(listToSort, first, last, win, grid, rows, width)
-
         quickSort(listToSort, first, pi - 1, win, grid, rows, width)
         quickSort(listToSort, pi + 1, last, win, grid, rows, width)
+
     return True
 
 
-def resetGame(grid, rows):
-    for i in range(rows):
-        for j in range(rows):
-            grid[i][j].colour = (128, 128, 128)
-            grid[i][j].calculated = False
+def cocktailSort(listToSort, win, grid, rows, width):
+    n = len(listToSort)
+    swapped = True
+    start = 0
+    end = n - 1
+    while swapped:
+        swapped = False
+
+        for i in range(start, end):
+            if listToSort[i] > listToSort[i + 1]:
+                listToSort[i], listToSort[i + 1] = listToSort[i + 1], listToSort[i]
+                swapped = True
+
+        if not swapped:
+            break
+
+        swapped = False
+        end -= 1
+
+        for i in range(end - 1, start - 1, -1):
+            if listToSort[i] > listToSort[i + 1]:
+                listToSort[i], listToSort[i + 1] = listToSort[i + 1], listToSort[i]
+                swapped = True
+        start += 1
+
+        prepareToDraw(listToSort, grid, rows)
+        draw(win, grid, rows, width)
+
+    return True
+
+
+def countingSort(listToSort, expo, win, grid, rows, width):
+    n = len(listToSort)
+    output = [0] * n
+    count = [0] * 10
+
+    for i in range(0, n):
+        index = (listToSort[i] // expo)
+        count[index % 10] += 1
+
+    for i in range(1, 10):
+        count[i] += count[i - 1]
+
+    i = n - 1
+    while i >= 0:
+        index = (listToSort[i] // expo)
+        output[count[index % 10] - 1] = listToSort[i]
+        count[index % 10] -= 1
+        i -= 1
+
+    i = 0
+    for i in range(0, len(listToSort)):
+        listToSort[i] = output[i]
+
+        prepareToDraw(listToSort, grid, rows)
+        draw(win, grid, rows, width)
+
+
+def radixSort(listToSort, win, grid, rows, width):
+    max1 = max(listToSort)
+
+    expo = 1
+    while max1 // expo > 0:
+
+        countingSort(listToSort, expo, win, grid, rows, width)
+        expo *= 10
+
+    return True
 
 
 def main(win, width):
@@ -198,7 +259,15 @@ def main(win, width):
 
                 elif event.key == pygame.K_3 and not started and not ended:
                     started = True
-                    ended = quickSort(count, 0, len(count)-1, win, grid, ROWS, width)
+                    ended = quickSort(count, 0, len(count) - 1, win, grid, ROWS, width)
+
+                elif event.key == pygame.K_4 and not started and not ended:
+                    started = True
+                    ended = cocktailSort(count, win, grid, ROWS, width)
+
+                elif event.key == pygame.K_5 and not started and not ended:
+                    started = True
+                    ended = radixSort(count, win, grid, ROWS, width)
 
                 if event.key == pygame.K_r:
                     resetGame(grid, ROWS)
@@ -214,4 +283,3 @@ def main(win, width):
 
 if __name__ == "__main__":
     main(GAME_WINDOW, GAME_WIDTH)
-
